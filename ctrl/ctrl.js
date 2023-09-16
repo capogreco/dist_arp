@@ -2,7 +2,7 @@
 let id = null
 
 // const ws_address = `wss://capogreco-omni.deno.dev`
-const ws_address = `ws://arp.deno.dev`
+const ws_address = `wss://arp.deno.dev`
 
 const socket = new WebSocket (ws_address)
 
