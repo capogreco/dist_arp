@@ -1,8 +1,19 @@
 // ~ WEBSOCKET THINGS ~
 let id = null
+let all_clear = true
 
-// const ws_address = `wss://capogreco-omni.deno.dev`
+function give_all_clear () {
+   all_clear = true
+}
+
+function wait_for_clear () {
+   all_clear = false
+   setTimeout (give_all_clear, 200)
+}
+
+
 const ws_address = `wss://arp.deno.dev`
+// const ws_address = `ws://localhost/`
 
 const socket = new WebSocket (ws_address)
 
@@ -23,8 +34,9 @@ socket.onmessage = m => {
          msg.content.forEach (e => {
             const div = document.createElement (`div`)
             div.innerText = e[0]
-            div.style.width = `100%`
-            div.style.color  = e[1].joined ? `white` : `grey`
+            div.style.width      = `100%`
+            div.style.userSelect = `none`
+            div.style.color = e[1].joined ? `white` : `grey`
             socket_list.appendChild (div)
          })
       }
@@ -42,6 +54,9 @@ socket.onopen = m => {
 
 document.body.style.margin   = 0
 document.body.style.overflow = `hidden`
+document.body.style.touchAction = `none`
+document.body.style.overscrollBehavior = `none`
+
 // document.body.style.backgroundColor = `indigo`
 
 const socket_list            = document.createElement (`div`)
@@ -97,18 +112,33 @@ document.body.onpointerdown = e => {
 document.body.onpointermove = e => {
    if (pointer_down) {
       background ()
-      draw_square (e)
 
-      socket.send (JSON.stringify ({
-         method: `upstate`,
-         content: {
-            x: e.x / cnv.width,
-            y: e.y / cnv.height,
-            is_playing: true,
-         }
-      }))   
+      const pos = {
+         x: e.x ? e.x : e.touches[0].clientX,
+         y: e.y ? e.y : e.touches[0].clientY
+      }
+
+      draw_square (pos)
+
+      if (all_clear) {
+         socket.send (JSON.stringify ({
+            method: `upstate`,
+            content: {
+               x: pos.x / cnv.width,
+               y: pos.y / cnv.height,
+               is_playing: true,
+            }
+         }))
+         wait_for_clear ()
+      }
    }
 }
+
+
+// document.body.ontouchmove = e => {
+
+// }
+
 
 document.body.onpointerup = e => {
    pointer_down = false
