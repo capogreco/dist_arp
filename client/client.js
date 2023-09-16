@@ -1,11 +1,11 @@
 // ~ WEBSOCKET THINGS ~
 
+
 let id = null
 // const ws_address = `wss://capogreco-omni.deno.dev`
-
 const ws_address = `ws://arp.deno.dev`
 
-const socket = new WebSocket (ws_address)
+const socket = await new WebSocket (ws_address)
 
 let init    = false
 
