@@ -9,7 +9,61 @@ let control    = false
 let is_playing = false
 
 // object to hold state
-const state = {}
+const state = {
+   x: 1,
+   y: 0.5,
+   // is_playing: false,
+   is_playing: true,
+   note_i: 0,
+   sock_i: 0,
+}
+
+const major = [ 0, 4, 7, 12 ]
+const minor = [ 0, 3, 7, 12 ]
+
+// function transpose (a, t) {
+//    return a.map (e => e + t)
+// }
+
+const notes = [
+   ...major.map (e => e + 56),
+   ...minor.map (e => e + 60),
+   ...minor.map (e => e + 65),
+   ...minor.map (e => e + 67),
+]
+
+function midi_to_cps (n) {
+   return 440 * (2 ** ((n - 69) / 12))
+}   
+
+function play_note () {
+   const socks = [ ...sockets.values () ]
+   if (socks.length > 0) state.sock_i %= socks.length
+   else state.sock_i = 0
+   state.note_i %= notes.length
+
+   // [ frq, lth, crv, bri, stk, gen, acx ]
+   const frq = midi_to_cps (notes[state.note_i])
+   const lth = 0.25
+   const crv = 1
+   const bri = state.x
+   const stk = 6
+   const gen = 1
+
+   if (socks[state.sock_i]) {
+      socks[state.sock_i].send (JSON.stringify ({ 
+         'method' : `note`,
+         'content' :  [ frq, lth, crv, bri, stk, gen ],
+      }))         
+   }
+
+   state.sock_i++
+   state.note_i++
+
+   if (state.is_playing) {
+      setTimeout (play_note, lth * 1000)
+   }
+}
 
 // function to manage requests
 const req_handler = async incoming_req => {
@@ -66,15 +120,12 @@ const req_handler = async incoming_req => {
 
             // method for updating state
             upstate: () => {
-
-               // assign msg.content to local state
+               const start = msg.content.is_playing && !state.is_playing
                Object.assign (state, msg.content)
 
-               // send upstate msg on 
-               // to all other sockets
-               sockets.forEach (s => {
-                  s.send (JSON.stringify (msg))
-               })
+               if (start) {
+                  play_note ()
+               }
             },
 
             // method for requests for control
@@ -119,35 +170,21 @@ const req_handler = async incoming_req => {
                // call update_control
                update_control ()
 
+
+
                // if already playing
-               if (is_playing) {
+               // if (is_playing) {
 
-                  // construct play msg
-                  // with current state
-                  const play_msg = {
-                     method: 'play',
-                     content: state,
-                  }
+               //    // construct play msg
+               //    // with current state
+               //    const play_msg = {
+               //       method: 'play',
+               //       content: state,
+               //    }
 
-                  // send play_msg to socket
-                  socket.send (JSON.stringify (play_msg))
-               }
-            },
-
-            // method for play msgs
-            play: () => {
-
-               // set local is_playing variable
-               is_playing = msg.content.is_playing
-
-               // update local state
-               Object.assign (state, msg.content.state)
-
-               // send play msg on to
-               // all other sockets
-               sockets.forEach (s => {
-                  s.send (JSON.stringify (msg))
-               })
+               //    // send play_msg to socket
+               //    socket.send (JSON.stringify (play_msg))
+               // }
             },
 
             greeting: () => {
