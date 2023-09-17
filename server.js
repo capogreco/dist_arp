@@ -123,6 +123,13 @@ const req_handler = async incoming_req => {
                const start = msg.content.is_playing && !state.is_playing
                Object.assign (state, msg.content)
 
+               sockets.forEach (s => {
+                  if (s.readyState == 1) {
+                     s.send (JSON.stringify (msg))
+                  }
+                  // else check_sockets ()
+               })
+
                if (start) {
                   play_note ()
                }

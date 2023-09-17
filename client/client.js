@@ -7,6 +7,8 @@ const ws_address = `wss://arp.deno.dev`
 
 const socket = new WebSocket (ws_address)
 
+const state = {}
+
 socket.onmessage = m => {
    const msg = JSON.parse (m.data)
    const handle_incoming = {
@@ -18,6 +20,14 @@ socket.onmessage = m => {
             method: `greeting`,
             content: `${ id } ~> hello!`
          }))
+      },
+
+      upstate: () => {
+         Object.assign (state, msg.content)
+         const t = audio_context.currentTime
+         rev_gate.gain.cancelScheduledValues (t)
+         rev_gate.gain.setValueAtTime (rev_gate.gain.value, t)
+         rev_gate.gain.linearRampToValueAtTime (state.y, t + 0.2)
       },
 
       note: () => {
