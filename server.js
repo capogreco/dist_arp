@@ -36,6 +36,8 @@ function midi_to_cps (n) {
    return 440 * (2 ** ((n - 69) / 12))
 }   
 
+const bpm = 120
+
 function play_note () {
    const socks = [ ...sockets.values () ]
    if (socks.length > 0) state.sock_i %= socks.length
@@ -44,7 +46,7 @@ function play_note () {
 
    // [ frq, lth, crv, bri, stk, gen, acx ]
    const frq = midi_to_cps (notes[state.note_i])
-   const lth = 0.25
+   const lth = ((60 / bpm) / 4) * (4 ** (1 - state.y))
    const crv = 1
    const bri = state.x
    const stk = 6
@@ -52,8 +54,9 @@ function play_note () {
 
    if (socks[state.sock_i]) {
       socks[state.sock_i].send (JSON.stringify ({ 
-         'method' : `note`,
+         'method'  : `note`,
          'content' :  [ frq, lth, crv, bri, stk, gen ],
+         'state'   : state,
       }))         
    }
 
@@ -121,14 +124,14 @@ const req_handler = async incoming_req => {
             // method for updating state
             upstate: () => {
                const start = msg.content.is_playing && !state.is_playing
+
                Object.assign (state, msg.content)
 
-               sockets.forEach (s => {
-                  if (s.readyState == 1) {
-                     s.send (JSON.stringify (msg))
-                  }
-                  // else check_sockets ()
-               })
+               // sockets.forEach (s => {
+               //    if (s.readyState == 1) {
+               //       s.send (JSON.stringify (msg))
+               //    }
+               // })
 
                if (start) {
                   play_note ()

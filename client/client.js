@@ -7,10 +7,11 @@ const ws_address = `wss://arp.deno.dev`
 
 const socket = new WebSocket (ws_address)
 
-const state = {}
+// const state = {}
 
 socket.onmessage = m => {
    const msg = JSON.parse (m.data)
+   console.dir (msg)
    const handle_incoming = {
 
       id: () => {
@@ -22,19 +23,28 @@ socket.onmessage = m => {
          }))
       },
 
-      upstate: () => {
-         Object.assign (state, msg.content)
-         const t = audio_context.currentTime
-         rev_gate.gain.cancelScheduledValues (t)
-         rev_gate.gain.setValueAtTime (rev_gate.gain.value, t)
-         const r = (1 - state.y) ** 6
-         rev_gate.gain.linearRampToValueAtTime (r, t + 0.2)
-      },
+      // upstate: () => {
+      //    Object.assign (state, msg.content)
+      //    const t = audio_context.currentTime
+      //    rev_gate.gain.cancelScheduledValues (t)
+      //    rev_gate.gain.setValueAtTime (rev_gate.gain.value, t)
+      //    const r = (1 - state.y) ** 6
+      //    rev_gate.gain.linearRampToValueAtTime (r, t + 0.2)
+      // },
 
       note: () => {
          if (audio_context.state == `running`) {
             bg_col = `turquoise`
             setTimeout (() => bg_col = `deeppink`, msg.content[1] * 1000)
+
+            const t = audio_context.currentTime
+            rev_gate.gain.cancelScheduledValues (t)
+            rev_gate.gain.setValueAtTime (rev_gate.gain.value, t)
+            const r = ((1 - msg.state.y) ** 12) * 0.4
+            rev_gate.gain.linearRampToValueAtTime (r, t + msg.content[1])
+
+            console.log (msg.state)
+
             play_osc (...msg.content, audio_context)
          }
       }
@@ -121,20 +131,20 @@ const rev = audio_context.createReverbFromUrl (reverb_url, () => {
 })
 
 function play_osc (frq, lth, crv, bri, stk, gen, acx) {
-   if (gen > stk || bri === 0 || frq > 24000) return
-   console.log (`gen is ${ gen }`)
+   if (gen > stk || bri === 0 || frq > 16000) return
 
    const t = acx.currentTime
 
    const pre = acx.createGain ()
    const rev_gen = stk - gen + 1
-   pre.gain.value = Math.min (1, bri * rev_gen)
+   const vol = Math.max (Math.min (1, bri * rev_gen), 0)
+   pre.gain.setValueAtTime (vol, t)
 
    const amp = acx.createGain ()
-   amp.gain.setValueAtTime (t, 0)
-   amp.gain.linearRampToValueAtTime (t + 0.02, 1)
-   amp.gain.setValueAtTime (t + lth, 1)
-   amp.gain.linearRampToValueAtTime (t + lth + 0.02, 0)
+   amp.gain.setValueAtTime (0, t)
+   amp.gain.linearRampToValueAtTime (0.4, t + 0.02)
+   amp.gain.setValueAtTime (0.4, t + lth)
+   amp.gain.linearRampToValueAtTime (0, t + lth + 0.02)
    amp.connect (acx.destination)
    amp.connect (rev_gate)
 
@@ -144,7 +154,7 @@ function play_osc (frq, lth, crv, bri, stk, gen, acx) {
    osc.start (t)
    osc.connect (pre)
       .connect (amp)
-   osc.stop (t + lth + 0.04)
+   osc.stop (t + lth + 0.2)
 
    if (stk > gen) {
       const next_bri = (bri - (1 / rev_gen)) * (rev_gen / (rev_gen - 1))
