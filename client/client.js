@@ -27,7 +27,7 @@ socket.onmessage = m => {
          const t = audio_context.currentTime
          rev_gate.gain.cancelScheduledValues (t)
          rev_gate.gain.setValueAtTime (rev_gate.gain.value, t)
-         const r = Math.max (((1 - state.y) * 2) - 1, 0)
+         const r = (1 - state.y) ** 6
          rev_gate.gain.linearRampToValueAtTime (r, t + 0.2)
       },
 
