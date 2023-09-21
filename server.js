@@ -68,17 +68,18 @@ function play_note () {
    const gen = 1
 
    for (let i = 0; i < 2; i++) {
-      if (socks[state.sock_i]) {
-         socks[state.sock_i].send (JSON.stringify ({ 
+
+      const rand_i = Math.floor (Math.random () * socks.length)
+      if (socks[rand_i]) {
+         socks[state.rand_i].send (JSON.stringify ({ 
             'method'  : `note`,
             'content' :  [ frq, lth, crv, bri, stk, gen ],
             'state'   : state,
          }))         
       }   
-      state.sock_i++
    }
 
-   state.sock_i++
+   // state.sock_i++
    state.note_i++
 
    if (state.is_playing) {
