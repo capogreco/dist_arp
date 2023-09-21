@@ -42,6 +42,8 @@ function change_chord () {
    setTimeout (change_chord, 6000)
 }
 
+change_chord ()
+
 function midi_to_cps (n) {
    return 440 * (2 ** ((n - 69) / 12))
 }   
@@ -57,23 +59,20 @@ function play_note () {
    // [ frq, lth, crv, bri, stk, gen, acx ]
    // const frq = midi_to_cps (notes[state.note_i])
    const frq = midi_to_cps (current_notes[note_i])
-   const lth = ((60 / bpm) / 64) * (4 ** (1 - state.y))
+   const lth = ((60 / bpm) / 32) * (4 ** (1 - state.y))
    const crv = 1
    const bri = state.x
    const stk = 6
    const gen = 1
 
-   for (let i = 0; i < 2; i++) {
-
-      const rand_i = Math.floor (Math.random () * socks.length)
-      if (socks[rand_i]) {
-         socks[rand_i].send (JSON.stringify ({ 
-            'method'  : `note`,
-            'content' :  [ frq, lth, crv, bri, stk, gen ],
-            'state'   : state,
-         }))         
-      }   
-   }
+   const rand_i = Math.floor (Math.random () * socks.length)
+   if (socks[rand_i]) {
+      socks[rand_i].send (JSON.stringify ({ 
+         'method'  : `note`,
+         'content' :  [ frq, lth, crv, bri, stk, gen ],
+         'state'   : state,
+      }))         
+   }   
 
    // state.sock_i++
    // state.note_i++
