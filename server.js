@@ -14,8 +14,8 @@ const state = {
    y: 0.5,
    // is_playing: false,
    is_playing: true,
-   note_i: 0,
-   sock_i: 0,
+   // note_i: 0,
+   // sock_i: 0,
 }
 
 const major = [ 0, 4, 7 ]
@@ -29,23 +29,18 @@ const minor_inv_3 = [ 10, 12, 15 ]
 // }
 
 const notes = [
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...major.map (e => e + 62),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
-   ...minor_inv_1.map (e => e + 57),
+   major.map (e => e + 62),
+   minor_inv_1.map (e => e + 57),
 ]
+
+let chord_i = 0
+let current_notes = notes[0]
+
+function change_chord () {
+   current_notes = notes[chord_i % 2]
+   chord_i++
+   setTimeout (change_chord, 6000)
+}
 
 function midi_to_cps (n) {
    return 440 * (2 ** ((n - 69) / 12))
@@ -55,13 +50,14 @@ const bpm = 120
 
 function play_note () {
    const socks = [ ...sockets.values () ]
-   if (socks.length > 0) state.sock_i %= socks.length
-   else state.sock_i = 0
-   state.note_i %= notes.length
+   // if (socks.length > 0) state.sock_i %= socks.length
+   // else state.sock_i = 0
+   const note_i = Math.floor (Math.random () * current_notes.length)
 
    // [ frq, lth, crv, bri, stk, gen, acx ]
-   const frq = midi_to_cps (notes[state.note_i])
-   const lth = ((60 / bpm) / 4) * (4 ** (1 - state.y))
+   // const frq = midi_to_cps (notes[state.note_i])
+   const frq = midi_to_cps (current_notes[note_i])
+   const lth = ((60 / bpm) / 64) * (4 ** (1 - state.y))
    const crv = 1
    const bri = state.x
    const stk = 6
@@ -80,7 +76,7 @@ function play_note () {
    }
 
    // state.sock_i++
-   state.note_i++
+   // state.note_i++
 
    if (state.is_playing) {
       setTimeout (play_note, lth * 1000)
