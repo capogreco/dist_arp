@@ -67,12 +67,15 @@ function play_note () {
    const stk = 6
    const gen = 1
 
-   if (socks[state.sock_i]) {
-      socks[state.sock_i].send (JSON.stringify ({ 
-         'method'  : `note`,
-         'content' :  [ frq, lth, crv, bri, stk, gen ],
-         'state'   : state,
-      }))         
+   for (let i = 0; i < 2; i++) {
+      if (socks[state.sock_i]) {
+         socks[state.sock_i].send (JSON.stringify ({ 
+            'method'  : `note`,
+            'content' :  [ frq, lth, crv, bri, stk, gen ],
+            'state'   : state,
+         }))         
+      }   
+      state.sock_i++
    }
 
    state.sock_i++
