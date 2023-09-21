@@ -71,7 +71,7 @@ function play_note () {
 
       const rand_i = Math.floor (Math.random () * socks.length)
       if (socks[rand_i]) {
-         socks[state.rand_i].send (JSON.stringify ({ 
+         socks[rand_i].send (JSON.stringify ({ 
             'method'  : `note`,
             'content' :  [ frq, lth, crv, bri, stk, gen ],
             'state'   : state,
