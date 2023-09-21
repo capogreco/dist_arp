@@ -18,18 +18,25 @@ const state = {
    sock_i: 0,
 }
 
-const major = [ 0, 4, 7, 12 ]
-const minor = [ 0, 3, 7, 12 ]
+const major = [ 0, 4, 7 ]
+const minor = [ 0, 3, 7 ]
+const minor_inv_1 = [ 3, 7, 12 ]
+const major_inv_2 = [ 7, 12, 16 ]
+const minor_inv_3 = [ 10, 12, 15 ]
 
 // function transpose (a, t) {
 //    return a.map (e => e + t)
 // }
 
 const notes = [
-   ...major.map (e => e + 56),
-   ...minor.map (e => e + 60),
-   ...minor.map (e => e + 65),
-   ...minor.map (e => e + 67),
+   ...major.map (e => e + 62),
+   ...major.map (e => e + 62),
+   ...minor_inv_1.map (e => e + 57),
+   ...minor_inv_1.map (e => e + 57),
+   ...major.map (e => e + 62),
+   ...major.map (e => e + 62),
+   ...minor_inv_1.map (e => e + 57),
+   ...minor_inv_1.map (e => e + 57),
 ]
 
 function midi_to_cps (n) {
